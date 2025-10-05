@@ -1,0 +1,34 @@
+{
+    "farms": [
+        {
+        "id" : 0,
+        "id_farms": 1,
+        "discord_id": "219534038212411392",
+        "name": "Maxi-Farm's"
+        },
+        {
+        "id" : 1,
+        "id_farms": 2,
+        "discord_id": "1013557370162532482",
+        "name": "htsr"
+        },
+        {
+        "id" : 2,
+        "id_farms": 3,
+        "discord_id": "1145762103655936122",
+        "name": "WiWi-GSP"
+        },
+        {
+        "id" : 3,
+        "id_farms": 4,
+        "discord_id": "439378290344460301",
+        "name": "Alex"
+        },
+        {
+        "id" : 4,
+        "id_farms": 5,
+        "discord_id": "724707874915221659",
+        "name": "anto"
+        }
+    ]
+}

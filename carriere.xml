@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<careerSavegame revision="2" valid="true">
+    <settings>
+        <savegameName>My game save</savegameName>
+        <creationDate>2025-09-13</creationDate>
+        <mapId>FS25_Pallegney.FS25_Pallegney</mapId>
+        <mapTitle>Pallegney</mapTitle>
+        <saveDateFormatted>2025-10-05</saveDateFormatted>
+        <saveDate>2025-10-05</saveDate>
+        <initialMoney>1000000</initialMoney>
+        <initialLoan>0</initialLoan>
+        <economicDifficulty>NORMAL</economicDifficulty>
+        <hasInitiallyOwnedFarmlands>false</hasInitiallyOwnedFarmlands>
+        <loadDefaultFarm>false</loadDefaultFarm>
+        <startWithGuidedTour>true</startWithGuidedTour>
+        <trafficEnabled>false</trafficEnabled>
+        <stopAndGoBraking>true</stopAndGoBraking>
+        <trailerFillLimit>false</trailerFillLimit>
+        <automaticMotorStartEnabled>false</automaticMotorStartEnabled>
+        <growthMode>1</growthMode>
+        <plannedDaysPerPeriod>1</plannedDaysPerPeriod>
+        <fruitDestruction>true</fruitDestruction>
+        <plowingRequiredEnabled>false</plowingRequiredEnabled>
+        <stonesEnabled>false</stonesEnabled>
+        <weedsEnabled>true</weedsEnabled>
+        <limeRequired>false</limeRequired>
+        <isSnowEnabled>true</isSnowEnabled>
+        <fuelUsage>2</fuelUsage>
+        <helperBuyFuel>false</helperBuyFuel>
+        <helperBuySeeds>false</helperBuySeeds>
+        <helperBuyFertilizer>false</helperBuyFertilizer>
+        <helperSlurrySource>1</helperSlurrySource>
+        <helperManureSource>1</helperManureSource>
+        <densityMapRevision>4</densityMapRevision>
+        <terrainTextureRevision>1</terrainTextureRevision>
+        <terrainLodTextureRevision>2</terrainLodTextureRevision>
+        <splitShapesRevision>2</splitShapesRevision>
+        <tipCollisionRevision>2</tipCollisionRevision>
+        <placementCollisionRevision>2</placementCollisionRevision>
+        <navigationCollisionRevision>2</navigationCollisionRevision>
+        <mapDensityMapRevision>1</mapDensityMapRevision>
+        <mapTerrainTextureRevision>1</mapTerrainTextureRevision>
+        <mapTerrainLodTextureRevision>1</mapTerrainLodTextureRevision>
+        <mapSplitShapesRevision>1</mapSplitShapesRevision>
+        <mapTipCollisionRevision>1</mapTipCollisionRevision>
+        <mapPlacementCollisionRevision>1</mapPlacementCollisionRevision>
+        <mapNavigationCollisionRevision>1</mapNavigationCollisionRevision>
+        <disasterDestructionState>ENABLED</disasterDestructionState>
+        <dirtInterval>3</dirtInterval>
+        <timeScale>0.500000</timeScale>
+        <autoSaveInterval>15.000000</autoSaveInterval>
+    </settings>
+    <map>
+        <foundHelpIcons>00000000000000000000</foundHelpIcons>
+    </map>
+    <introductionHelp active="false">
+        <shownElements></shownElements>
+        <shownHints></shownHints>
+    </introductionHelp>
+    <statistics>
+        <money>457486</money>
+        <playTime>9239.275391</playTime>
+    </statistics>
+    <mapsSplitShapeFileIds count="1">
+        <id id="0"/>
+    </mapsSplitShapeFileIds>
+    <slotSystem slotUsage="1762"/>
+    <mod modName="FS25_MS2Telemetry" title="Mods Studio Telemetry" version="1.2.0.0" required="false" fileHash="ea84ba8f3a16dcbbd13ee1625da51176"/>
+    <mod modName="FS25_FarmsCleanup" title="Farms Cleanup" version="1.0.0.0" required="false" fileHash="332a98e2efa508ec9e347b54f7ad3771"/>
+    <mod modName="FS25_TrainStop" title="Train Stop" version="1.0.0.0" required="false" fileHash="0da5af3346c90840a76ae84ae64005ad"/>
+    <mod modName="FS25_paintAndTerraformAnywhere" title="Paint And Terraform Anywhere" version="1.0.0.2" required="false" fileHash="989de5d7a626f7ec61cd8167705787a5"/>
+    <mod modName="FS25_TrailerJointBlock" title="Trailer Axle Blocker" version="1.0.0.1" required="false" fileHash="6e1b20bb8ea923a065823556c49048b0"/>
+    <mod modName="pdlc_strawHarvestPack" title="Straw Harvest Pack" version="1.0.0.0" required="false" fileHash="1b56b7b791306044706ec495f575995d"/>
+    <mod modName="FS25_GreenhouseAutomaticWatering" title="Greenhouse Automatic Watering" version="1.0.0.0" required="false" fileHash="1cfcd02780463b9f8a53f1a813092d75"/>
+    <mod modName="FS25_Pallegney_Buildings_Pack" title="Pallegney Buildings Pack" version="1.0.0.0" required="false" fileHash="554cc2c24891bc5d9d1a0881a254fcb8"/>
+    <mod modName="FS25_Pallegney" title="Pallegney" version="1.1.0.1" required="true" fileHash="b783df4a9991b63e38e9fd8331b9e04c"/>
+    <mod modName="FS25_UniversalAutoload" title="Universal Autoload" version="1.0.1.0" required="false" fileHash="7d4adf2b5048b7105cea9e1054767c05"/>
+    <mod modName="FS25_SIMDashboard_Interface" title="SIM Dashboard Interface" version="1.0.0.0" required="false" fileHash="7d5bcabc2aaae5edc8bf44e295553764"/>
+    <mod modName="FS25_toggleSuperStrength" title="Super Strength" version="1.0.1.0" required="false" fileHash="724058d3f25bdbc7b56ab5a2aeb33f0b"/>
+</careerSavegame>

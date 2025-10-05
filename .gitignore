@@ -1,0 +1,5 @@
+Code.txt
+database.sqlite
+__pycache__
+*.pyc
+*.pyo
