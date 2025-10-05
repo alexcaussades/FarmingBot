@@ -10,10 +10,8 @@ from task.up_mouth import connect_db, close_connection, update_mouth_task, get_m
 import sqlite3
 
 load_dotenv()
-Serveur_info_live = "http://95.156.250.199:10610/feed/dedicated-server-stats.xml?code=2e661bb49ace5801e8706815b754b4c0"
-Serveur_carriere_live = "http://95.156.250.199:10610/feed/dedicated-server-savegame.html?code=2e661bb49ace5801e8706815b754b4c0&file=careerSavegame"
-savegarde = "https://ukln-webinterface-rp.nitrado.net/lws25/95-156-250-199/10610/savegame3"
-#Serveur_info_live = "serveur.xml"
+Serveur_info_live = os.getenv('Serveur_Stats')
+Serveur_carriere_live = os.getenv('Serveur_Career')
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 intents.message_content = True
