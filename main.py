@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
 import requests
 import json
-from task.task import TaskManager
-from task.recolte import get_recolte_info, list_crops, add_crop
-from task.up_mouth import connect_db, close_connection, update_mouth_task, get_mouth_tasks
+from module.task.task import TaskManager
+from module.recolte.recolte import get_recolte_info, list_crops, add_crop
+from module.mounth.up_mouth import connect_db, close_connection, update_mouth_task, get_mouth_tasks
 import sqlite3
 
 load_dotenv()
