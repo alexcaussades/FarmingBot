@@ -9,6 +9,8 @@ from module.task.task import TaskManager
 from module.recolte.recolte import get_recolte_info, list_crops, add_crop
 from module.mounth.up_mouth import connect_db, close_connection, update_mouth_task, get_mouth_tasks
 import sqlite3
+import logging
+from datetime import datetime
 
 load_dotenv()
 Serveur_info_live = os.getenv('Serveur_Stats')
@@ -22,7 +24,22 @@ intents.message_content = True
 async def on_ready():
    print(f"Bot connecté en tant que {client.user}")
    await client.change_presence(activity=discord.Game(name=os.getenv('MessageServeur') + "V" + os.getenv('Version')))
-  
+
+
+@client.event
+async def on_member_join(member):
+    # Attribuer automatiquement le rôle "Membres" au nouveau membre
+    role = discord.utils.get(member.guild.roles, name="Membres")
+    if role is not None:
+        try:
+            await member.add_roles(role)
+            print(f"Rôle 'Membres' attribué à {member.name}")
+        except discord.Forbidden:
+            print(f"❌ Je n'ai pas la permission d'ajouter le rôle à {member.name}")
+        except Exception as e:
+            print(f"❌ Erreur lors de l'attribution du rôle: {str(e)}")
+    else:
+        print(f"⚠️ Le rôle 'membre' n'existe pas sur le serveur")
 
 @client.event
 async def on_message(message):
@@ -32,10 +49,20 @@ async def on_message(message):
         return
 
     if message.content.startswith('!bonjour'):
-        await message.channel.send('Bonjour ' + message.author.name + ' ! \n je suis le bot du serveur ! \n Pour voir les commandes disponibles, tapez !help')
+        staff_role = discord.utils.get(message.guild.roles, name="STAFF")
+        if staff_role in message.author.roles:
+            await message.channel.send(f"Bonjour {message.author.name}, Voici l'un de mes maîtres")
+        else:
+            await message.channel.send("Bonjour " + message.author.name + " ! 👋")
 
     if message.content.startswith('!help'):
-        await message.channel.send("\n Actuellent en maintenance")
+        await message.channel.send("\n **Commandes disponibles :**\n"
+                                   "• `!bonjour` : Le bot vous salue.\n"
+                                   "• `!purge <nombre>` : Supprime un nombre spécifié de messages (Rôle requis: STAFF ou VIP).\n"
+                                   "• `!kick <@utilisateur> [raison]` : Expulse un utilisateur du serveur (Rôle requis: STAFF ou VIP).\n"
+                                   "• `!addrole <@utilisateur> <@rôle>` : Ajoute un rôle à un utilisateur (Rôle requis: STAFF).\n"
+                                   "• `!rmrole <@utilisateur> <@rôle>` : Retire un rôle d'un utilisateur (Rôle requis: STAFF).\n"
+                                    )
 
     if message.content.startswith('!purge'):
         # Vérifier si l'utilisateur a le rôle "staff" ou "VIP"
@@ -137,7 +164,7 @@ async def on_message(message):
         except Exception as e:
             await message.channel.send(f"❌ Une erreur s'est produite: {str(e)}")
             
-    if message.content.startswith('!removerole'):
+    if message.content.startswith('!rmrole'):
         # Vérifier si l'utilisateur a le rôle "Bureau"
         staff_role = discord.utils.get(message.guild.roles, name="STAFF")
         if staff_role not in message.author.roles:
@@ -176,6 +203,8 @@ def new_func(message, role_name):
     role = discord.utils.get(message.guild.roles, name=role_name)
     return role
     
+    
+
     
         
 client.run(os.getenv('Token'))
