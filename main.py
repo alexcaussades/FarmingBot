@@ -18,12 +18,14 @@ Serveur_carriere_live = os.getenv('Serveur_Career')
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 intents.message_content = True
+webhook_url = "https://discord.com/api/webhooks/1458894502105317520/jI95H8T60BaliVqLpxUDEZ4OImBXtDCrsaaGeoM4QecpV8vFm-TM6Dgp5ik9i1H6RZKP"
 
 
 @client.event
 async def on_ready():
    print(f"Bot connecté en tant que {client.user}")
    await client.change_presence(activity=discord.Game(name=os.getenv('MessageServeur') + "V" + os.getenv('Version')))
+   requests.post(webhook_url, json={"content": f"🤖 Le bot s'est connecté en tant que {client.user}"})
 
 
 @client.event
@@ -82,15 +84,20 @@ async def on_message(message):
             amount = int(args[1])
             if amount <= 0 or amount > 100:
                 await message.channel.send("❌ Le nombre doit être entre 1 et 100")
+                #envoyer un webhook au channel de log
+                requests.post(webhook_url, json={"content": f"⚠️ {message.author.name} a tenté d'utiliser la commande purge avec un nombre invalide: {amount}"})
                 return
             
             # Supprimer les messages (amount + 1 pour inclure la commande)
             deleted = await message.channel.purge(limit=amount + 1)
             await message.channel.send(f"✅ {len(deleted) - 1} message(s) supprimé(s)", delete_after=5)
+            requests.post(webhook_url, json={"content": f"✅ {message.author.name} a supprimé {len(deleted) - 1} message(s) dans le channel {message.channel.name}"})
+            
         except ValueError:
             await message.channel.send("❌ Veuillez entrer un nombre valide")
         except discord.Forbidden:
             await message.channel.send("❌ Je n'ai pas la permission de supprimer les messages")
+            requests.post(webhook_url, json={"content": f"❌ {message.author.name} a tenté d'utiliser la commande purge mais le bot n'a pas les permissions nécessaires."})
 
     if message.content.startswith('!kick'):
         # Vérifier si l'utilisateur a le rôle "STAFF" ou "VIP"
@@ -118,13 +125,16 @@ async def on_message(message):
             # Vérifier que le bot peut kick ce membre
             if member.top_role >= message.author.top_role:
                 await message.channel.send("❌ Vous ne pouvez pas kick un membre de rang égal ou supérieur")
+                requests.post(webhook_url, json={"content": f"⚠️ {message.author.name} a tenté d'utiliser la commande kick sur un membre de rang égal ou supérieur: {member.name}"})
                 return
             
             # Kick le membre
             await member.kick(reason=reason)
             await message.channel.send(f"✅ {member.name} a été kick du serveur. Raison: {reason}")
+            requests.post(webhook_url, json={"content": f"✅ {message.author.name} a kické {member.name} du serveur. Raison: {reason}"})
         except discord.Forbidden:
             await message.channel.send("❌ Je n'ai pas la permission de kick ce membre")
+            requests.post(webhook_url, json={"content": f"❌ {message.author.name} a tenté d'utiliser la commande kick mais le bot n'a pas les permissions nécessaires."})
         except Exception as e:
             await message.channel.send(f"❌ Une erreur s'est produite: {str(e)}")
 
@@ -159,8 +169,10 @@ async def on_message(message):
             # Ajouter le rôle au membre
             await member.add_roles(role)
             await message.channel.send(f"✅ Le rôle '@{role.name}' a été ajouté à {member.name}")
+            requests.post(webhook_url, json={"content": f"✅ {message.author.name} a ajouté le rôle '@{role.name}' à {member.name}"})
         except discord.Forbidden:
             await message.channel.send("❌ Je n'ai pas la permission d'ajouter ce rôle")
+            requests.post(webhook_url, json={"content": f"❌ {message.author.name} a tenté d'utiliser la commande addrole mais le bot n'a pas les permissions nécessaires."})
         except Exception as e:
             await message.channel.send(f"❌ Une erreur s'est produite: {str(e)}")
             
@@ -181,6 +193,7 @@ async def on_message(message):
             # Récupérer le membre mentionné
             if not message.mentions:
                 await message.channel.send("❌ Veuillez mentionner un utilisateur")
+                requests.post(webhook_url, json={"content": f"❌ {message.author.name} a tenté d'utiliser la commande rmrole sans mentionner d'utilisateur."})
                 return
             
             member = message.mentions[0]
@@ -194,17 +207,17 @@ async def on_message(message):
             # Retirer le rôle du membre
             await member.remove_roles(role)
             await message.channel.send(f"✅ Le rôle '@{role.name}' a été retiré de {member.name}")
+            requests.post(webhook_url, json={"content": f"✅ {message.author.name} a retiré le rôle '@{role.name}' de {member.name}"})
         except discord.Forbidden:
             await message.channel.send("❌ Je n'ai pas la permission de retirer ce rôle")
+            requests.post(webhook_url, json={"content": f"❌ {message.author.name} a tenté d'utiliser la commande rmrole mais le bot n'a pas les permissions nécessaires."})
         except Exception as e:
             await message.channel.send(f"❌ Une erreur s'est produite: {str(e)}")
 
 def new_func(message, role_name):
     role = discord.utils.get(message.guild.roles, name=role_name)
     return role
-    
-    
 
-    
+
         
 client.run(os.getenv('Token'))
