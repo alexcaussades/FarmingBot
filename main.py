@@ -112,7 +112,7 @@ async def on_message(message):
             # Extraire le membre et le rôle à ajouter
             args = message.content.split()
             if len(args) < 3:
-                await message.channel.send("❌ Usage: !addrole <@utilisateur> <nom_du_rôle>")
+                await message.channel.send("❌ Usage: !addrole <@utilisateur> <@rôle>")
                 return
             
             # Récupérer le membre mentionné
@@ -121,16 +121,17 @@ async def on_message(message):
                 return
             
             member = message.mentions[0]
-            role_name = " ".join(args[2:])
-            role = discord.utils.get(message.guild.roles, name=role_name)
+            # Extraire l'ID du rôle mentionné
+            role_id = int(args[2].strip('<@&>'))
+            role = message.guild.get_role(role_id)
             
             if role is None:
-                await message.channel.send(f"❌ Le rôle '{role_name}' n'existe pas")
+                await message.channel.send(f"❌ Le rôle avec l'ID {role_id} n'existe pas")
                 return
             
             # Ajouter le rôle au membre
             await member.add_roles(role)
-            await message.channel.send(f"✅ Le rôle '{role_name}' a été ajouté à {member.name}")
+            await message.channel.send(f"✅ Le rôle '@{role.name}' a été ajouté à {member.name}")
         except discord.Forbidden:
             await message.channel.send("❌ Je n'ai pas la permission d'ajouter ce rôle")
         except Exception as e:
@@ -156,20 +157,24 @@ async def on_message(message):
                 return
             
             member = message.mentions[0]
-            role_name = " ".join(args[2:])
-            role = discord.utils.get(message.guild.roles, name=role_name)
+            role_id = int(args[2].strip('<@&>'))
+            role = message.guild.get_role(role_id)
             
             if role is None:
-                await message.channel.send(f"❌ Le rôle '{role_name}' n'existe pas")
+                await message.channel.send(f"❌ Le rôle '{role_id}' n'existe pas")
                 return
             
             # Retirer le rôle du membre
             await member.remove_roles(role)
-            await message.channel.send(f"✅ Le rôle '{role_name}' a été retiré de {member.name}")
+            await message.channel.send(f"✅ Le rôle '@{role.name}' a été retiré de {member.name}")
         except discord.Forbidden:
             await message.channel.send("❌ Je n'ai pas la permission de retirer ce rôle")
         except Exception as e:
             await message.channel.send(f"❌ Une erreur s'est produite: {str(e)}")
+
+def new_func(message, role_name):
+    role = discord.utils.get(message.guild.roles, name=role_name)
+    return role
     
     
         
