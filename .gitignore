@@ -1,7 +1,9 @@
 Code.txt
 database.sqlite
 .env
-__pycache__
+*__pycache__
 *.pyc
 *.pyo
 .env
+serveur.xml
+carriere.xml
