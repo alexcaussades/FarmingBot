@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
 import requests
 import json
-from module.task.task import TaskManager
 from module.recolte.recolte import get_recolte_info, list_crops, add_crop
 from module.mounth.up_mouth import connect_db, close_connection, update_mouth_task, get_mouth_tasks
 import sqlite3
@@ -27,7 +26,6 @@ async def on_ready():
    await client.change_presence(activity=discord.Game(name=os.getenv('MessageServeur') + "V" + os.getenv('Version')))
    requests.post(webhook_url, json={"content": f"🤖 Le bot s'est connecté en tant que {client.user}"})
 
-
 @client.event
 async def on_member_join(member):
     # Attribuer automatiquement le rôle "Membres" au nouveau membre
@@ -42,6 +40,26 @@ async def on_member_join(member):
             print(f"❌ Erreur lors de l'attribution du rôle: {str(e)}")
     else:
         print(f"⚠️ Le rôle 'membre' n'existe pas sur le serveur")
+
+@client.event
+async def on_message_delete(message):
+    # Événement déclenché quand un message est supprimé
+    if message.author == client.user:
+        return
+    requests.post(webhook_url, json={"content": f"🗑️ Message supprimé de {message.author.name}: {message.content[:100]}"})
+
+@client.event
+async def on_message_edit(before, after):
+    # Événement déclenché quand un message est modifié
+    if before.author == client.user:
+        return
+    if before.content != after.content:
+        requests.post(webhook_url, json={"content": f"✏️ {before.author.name} a modifié un message:\nAvant: {before.content[:100]}\nAprès: {after.content[:100]}"})
+
+@client.event
+async def on_member_remove(member):
+    # Événement déclenché quand un membre quitte le serveur
+    requests.post(webhook_url, json={"content": f"👋 {member.name} a quitté le serveur"})
 
 @client.event
 async def on_message(message):
@@ -64,6 +82,8 @@ async def on_message(message):
                                    "• `!kick <@utilisateur> [raison]` : Expulse un utilisateur du serveur (Rôle requis: STAFF ou VIP).\n"
                                    "• `!addrole <@utilisateur> <@rôle>` : Ajoute un rôle à un utilisateur (Rôle requis: STAFF).\n"
                                    "• `!rmrole <@utilisateur> <@rôle>` : Retire un rôle d'un utilisateur (Rôle requis: STAFF).\n"
+                                   "• `!getrole <nom_du_rôle>` : Demande un rôle au STAFF.\n"
+                                   "• `!recolte <type_de_culture>` : Obtient les informations de semis et récolte pour une culture spécifique.\n"
                                     )
 
     if message.content.startswith('!purge'):
@@ -213,6 +233,43 @@ async def on_message(message):
             requests.post(webhook_url, json={"content": f"❌ {message.author.name} a tenté d'utiliser la commande rmrole mais le bot n'a pas les permissions nécessaires."})
         except Exception as e:
             await message.channel.send(f"❌ Une erreur s'est produite: {str(e)}")
+                             
+    if message.content.startswith('!getrole'):
+            args = message.content.split()
+            if len(args) < 2:
+                await message.channel.send("❌ Usage: !getrole <nom_du_rôle>")
+                return
+            role_name = args[1]
+            role = discord.utils.get(message.guild.roles, name=role_name)
+            if role is None:
+                await message.channel.send(f"❌ Le rôle '{role_name}' n'existe pas.")
+                return
+            try:
+                channel = client.get_channel(1450074107319423050)
+                await channel.send(f" L'utilisateur @{message.author.name} a demandé le rôle '{role_name}'.")
+                await message.channel.send(f"✅ Votre demande pour le rôle '{role_name}' a été envoyée aux STAFF du serveur.")
+            except discord.Forbidden:
+                await message.channel.send("❌ Je n'ai pas la permission d'ajouter ce rôle.")
+        
+    if message.content.startswith('!recolte'):
+        args = message.content.split(" ", 1)
+        if len(args) < 2:
+            await message.channel.send("❌ Usage: !recolte <type_de_culture>")
+            return
+        crop_type = args[1].lower()
+        info = get_recolte_info(crop_type)
+        # renvoyer le message en DM à l'utilisateur
+        await message.author.send(info)
+        await message.channel.send("✅ Les informations de récolte vous ont été envoyées en message privé.", delete_after=10)
+        # delete the command message to keep the channel clean
+        await message.delete()
+        
+    
+        
+    
+        
+        
+        
 
 def new_func(message, role_name):
     role = discord.utils.get(message.guild.roles, name=role_name)
