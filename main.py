@@ -28,7 +28,7 @@ DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_TEST")
 API_KEY = os.environ.get("Pc_windows")
 app = Flask(__name__)
 
-HOST = "192.168.1.114"
+HOST = "192.168.1.114/FarmingBot"
 PORT = 8080
 
 # ==========================================================
