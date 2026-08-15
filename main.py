@@ -1,16 +1,23 @@
 from ast import Not
 import discord
+from flask import Flask
 import os
 from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
 import requests
 import json
+from module.ed import ed
 from module.recolte.recolte import get_recolte_info, list_crops, add_crop
 from module.mounth.up_mouth import connect_db, close_connection, update_mouth_task, get_mouth_tasks
 from module.ed.ed import send_discord
 import sqlite3
 import logging
 from datetime import datetime
+
+
+# ============================================================
+# CONFIGURATION
+# ============================================================
 
 load_dotenv()
 Serveur_info_live = os.getenv('Serveur_Stats')
@@ -19,25 +26,41 @@ intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 intents.message_content = True
 webhook_url = "https://discord.com/api/webhooks/1458894502105317520/jI95H8T60BaliVqLpxUDEZ4OImBXtDCrsaaGeoM4QecpV8vFm-TM6Dgp5ik9i1H6RZKP"
+DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_TEST")
+API_KEY = os.environ.get("Pc_windows")
+app = Flask(__name__)
 
+HOST = "0.0.0.0"
+PORT = 8080
 
-@client.event
-async def send_discord(message):
+# ==========================================================
+# Elite Dangerous Events
+# ==========================================================
+
+def send_discord(message):
     data = {
         "content": message
     }
     headers = {
         "Content-Type": "application/json"
     }
-    response = requests.post(webhook_url, json=data, headers=headers)
+    response = requests.post(DISCORD_WEBHOOK, json=data, headers=headers)
     if response.status_code != 204:
         print(f"Failed to send message to Discord: {response.status_code} - {response.text}")
+
+# ===========================================================
+# DISCORD EVENTS
+# ===========================================================
+
+
 
 @client.event
 async def on_ready():
    print(f"Bot connecté en tant que {client.user}")
    await client.change_presence(activity=discord.Game(name=os.getenv('MessageServeur') + "V" + os.getenv('Version')))
    requests.post(webhook_url, json={"content": f"🤖 Le bot s'est connecté en tant que {client.user}"})
+
+
 
 @client.event
 async def on_member_join(member):
