@@ -1,15 +1,13 @@
 from ast import Not
 import discord
-from flask import Flask
+from flask import Flask, request, jsonify
 import os
 from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
 import requests
 import json
-from module.ed import ed
 from module.recolte.recolte import get_recolte_info, list_crops, add_crop
 from module.mounth.up_mouth import connect_db, close_connection, update_mouth_task, get_mouth_tasks
-from module.ed.ed import send_discord
 import sqlite3
 import logging
 from datetime import datetime
@@ -30,23 +28,37 @@ DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_TEST")
 API_KEY = os.environ.get("Pc_windows")
 app = Flask(__name__)
 
-HOST = "192.168.1.114"
+HOST = "0.0.0.0"
 PORT = 8080
 
 # ==========================================================
 # Elite Dangerous Events
 # ==========================================================
 
-def send_discord(message):
-    data = {
-        "content": message
-    }
-    headers = {
-        "Content-Type": "application/json"
-    }
-    response = requests.post(DISCORD_WEBHOOK, json=data, headers=headers)
-    if response.status_code != 204:
-        print(f"Failed to send message to Discord: {response.status_code} - {response.text}")
+app = Flask(__name__)
+
+@app.route('/FarmingBot', methods=['POST'])
+def handle_event():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Aucune donnée JSON reçue"}), 400
+
+    event_type = data.get("event")
+    if not event_type:
+        return jsonify({"error": "Aucun type d'événement spécifié"}), 400
+
+    # Log the received event
+    logging.info(f"Événement reçu: {event_type} - Données: {data}")
+
+    # Handle specific events
+    if event_type == "FarmingBot":
+        # Process the FarmingBot event
+        logging.info("Traitement de l'événement FarmingBot")
+        # Add your processing logic here
+
+    return jsonify({"status": "success", "message": f"Événement {event_type} traité avec succès"}), 200
+
+
 
 # ===========================================================
 # DISCORD EVENTS
@@ -314,3 +326,5 @@ def new_func(message, role_name):
 
         
 client.run(os.getenv('Token'))
+
+app.run(host=HOST, port=PORT)
