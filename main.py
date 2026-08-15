@@ -37,26 +37,349 @@ PORT = 8080
 
 app = Flask(__name__)
 
-@app.route('/FarmingBot', methods=['POST', 'GET'])
-def send_event():
-    data = request.get_json()
+from flask import Flask, request, jsonify
+import requests
+import os
+from datetime import datetime
+
+app = Flask(__name__)
+
+# ==========================================================
+# CONFIGURATION
+# ==========================================================
+
+def send_discord(message):
+
+    if not DISCORD_WEBHOOK:
+        print("[DISCORD] Webhook non configuré")
+        return False
+
+    try:
+        response = requests.post(
+            DISCORD_WEBHOOK,
+            json={
+                "username": "Fleet Carrier",
+                "content": message
+            },
+            timeout=10
+        )
+
+        if response.status_code in (200, 204):
+            print("[DISCORD] Message envoyé")
+            return True
+
+        print(
+            f"[DISCORD] Erreur HTTP {response.status_code}"
+        )
+
+    except Exception as error:
+        print(f"[DISCORD] Erreur : {error}")
+
+    return False
+
+
+# ==========================================================
+# SECURITE
+# ==========================================================
+
+def check_api_key():
+
+    if not API_KEY:
+        print("[SECURITE] FLEET_API_KEY non configurée")
+        return False
+
+    return request.headers.get("X-API-Key") == API_KEY
+
+
+# ==========================================================
+# RECEPTION DES EVENEMENTS
+# ==========================================================
+
+@app.route("/fleet", methods=["POST"])
+def fleet_event():
+
+    if not check_api_key():
+        return jsonify({
+            "error": "unauthorized"
+        }), 401
+
+    data = request.get_json(silent=True)
+
     if not data:
-        return jsonify({"error": "Aucune donnée JSON reçue"}), 400
+        return jsonify({
+            "error": "invalid json"
+        }), 400
 
-    event_type = data.get("event")
-    if not event_type:
-        return jsonify({"error": "Aucun type d'événement spécifié"}), 400
+    event = data.get("event")
 
-    # Log the received event
-    logging.info(f"Événement reçu: {event_type} - Données: {data}")
+    print(
+        f"[EVENT] {event}"
+    )
 
-    # Handle specific events
-    if event_type == "FarmingBot":
-        # Process the FarmingBot event
-        logging.info("Traitement de l'événement FarmingBot")
-        # Add your processing logic here
+    # ======================================================
+    # CONNEXION
+    # ======================================================
 
-    return jsonify({"status": "success", "message": f"Événement {event_type} traité avec succès"}), 200
+    if event == "LoadGame":
+
+        commander = data.get(
+            "commander",
+            "Inconnu"
+        )
+
+        ship = data.get(
+            "ship",
+            "Inconnu"
+        )
+
+        ship_ident = data.get(
+            "ship_ident",
+            ""
+        )
+
+        system = data.get(
+            "system",
+            "Inconnu"
+        )
+
+        timestamp = data.get(
+            "timestamp",
+            ""
+        )
+
+        message = (
+            "🟢 **COMMANDANT CONNECTÉ**\n\n"
+            f"👤 **{commander}**\n"
+            f"🛸 Vaisseau : **{ship}**\n"
+        )
+
+        if ship_ident:
+            message += f"🔖 `{ship_ident}`\n"
+
+        message += (
+            f"📍 Système : **{system}**\n"
+            f"🕐 {timestamp}"
+        )
+
+    # ======================================================
+    # DECONNEXION
+    # ======================================================
+
+    elif event == "Shutdown":
+
+        timestamp = data.get(
+            "timestamp",
+            ""
+        )
+
+        message = (
+            "🔴 **COMMANDANT DÉCONNECTÉ**\n\n"
+            f"🕐 {timestamp}"
+        )
+
+    # ======================================================
+    # SAUT FSD
+    # ======================================================
+
+    elif event == "FSDJump":
+
+        system = data.get(
+            "system",
+            "Inconnu"
+        )
+
+        timestamp = data.get(
+            "timestamp",
+            ""
+        )
+
+        message = (
+            "🌌 **SAUT SYSTÈME**\n\n"
+            f"📍 Destination : **{system}**\n"
+            f"🕐 {timestamp}"
+        )
+
+    # ======================================================
+    # DEMANDE DE SAUT DU FLEET CARRIER
+    # ======================================================
+
+    elif event == "CarrierJumpRequest":
+
+        carrier = data.get(
+            "carrier",
+            "Fleet Carrier"
+        )
+
+        callsign = data.get(
+            "callsign",
+            ""
+        )
+
+        system = data.get(
+            "system",
+            "Inconnu"
+        )
+
+        timestamp = data.get(
+            "timestamp",
+            ""
+        )
+
+        message = (
+            "🟠 **SAUT DU FLEET CARRIER PROGRAMMÉ**\n\n"
+            f"🛸 **{carrier}**\n"
+            f"🔖 `{callsign}`\n"
+            f"🎯 Destination : **{system}**\n"
+            f"🕐 {timestamp}"
+        )
+
+    # ======================================================
+    # SAUT DU FLEET CARRIER
+    # ======================================================
+
+    elif event == "CarrierJump":
+
+        carrier = data.get(
+            "carrier",
+            "Fleet Carrier"
+        )
+
+        callsign = data.get(
+            "callsign",
+            ""
+        )
+
+        system = data.get(
+            "system",
+            "Inconnu"
+        )
+
+        timestamp = data.get(
+            "timestamp",
+            ""
+        )
+
+        message = (
+            "🚀 **FLEET CARRIER DÉPLACÉ**\n\n"
+            f"🛸 **{carrier}**\n"
+            f"🔖 `{callsign}`\n"
+            f"📍 Nouveau système : **{system}**\n"
+            f"🕐 {timestamp}"
+        )
+
+    # ======================================================
+    # DOCKAGE
+    # ======================================================
+
+    elif event == "Docked":
+
+        station = data.get(
+            "station",
+            "Inconnue"
+        )
+
+        system = data.get(
+            "system",
+            "Inconnu"
+        )
+
+        timestamp = data.get(
+            "timestamp",
+            ""
+        )
+
+        message = (
+            "🛬 **VAISSEAU AMARRÉ**\n\n"
+            f"🏢 Station : **{station}**\n"
+            f"📍 Système : **{system}**\n"
+            f"🕐 {timestamp}"
+        )
+
+    # ======================================================
+    # DECOLLAGE
+    # ======================================================
+
+    elif event == "Undocked":
+
+        station = data.get(
+            "station",
+            "Inconnue"
+        )
+
+        system = data.get(
+            "system",
+            "Inconnu"
+        )
+
+        timestamp = data.get(
+            "timestamp",
+            ""
+        )
+
+        message = (
+            "🛫 **VAISSEAU DÉCOLLÉ**\n\n"
+            f"🏢 Station : **{station}**\n"
+            f"📍 Système : **{system}**\n"
+            f"🕐 {timestamp}"
+        )
+
+    else:
+
+        print(
+            f"[EVENT] Événement ignoré : {event}"
+        )
+
+        return jsonify({
+            "ignored": True,
+            "event": event
+        }), 200
+
+    # ======================================================
+    # ENVOI DISCORD
+    # ======================================================
+
+    if send_discord(message):
+
+        return jsonify({
+            "success": True,
+            "event": event
+        }), 200
+
+    return jsonify({
+        "error": "discord"
+    }), 500
+
+
+# ==========================================================
+# TEST DU SERVEUR
+# ==========================================================
+
+@app.route("/health", methods=["GET"])
+def health():
+
+    return jsonify({
+        "status": "OK",
+        "service": "Fleet Carrier Discord Bot"
+    })
+
+
+# ==========================================================
+# DEMARRAGE
+# ==========================================================
+
+if __name__ == "__main__":
+
+    print("=" * 50)
+    print("       ELITE DANGEROUS DISCORD BOT")
+    print("=" * 50)
+    print()
+    print(f"Écoute sur {HOST}:{PORT}")
+    print()
+
+    app.run(
+        host=HOST,
+        port=PORT
+    )
 
 
 
