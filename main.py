@@ -28,7 +28,7 @@ DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_TEST")
 API_KEY = os.environ.get("Pc_windows")
 app = Flask(__name__)
 
-HOST = "0.0.0.0"
+HOST = "192.168.1.114"
 PORT = 8080
 
 # ==========================================================
@@ -37,8 +37,8 @@ PORT = 8080
 
 app = Flask(__name__)
 
-@app.route('/FarmingBot', methods=['POST'])
-def handle_event():
+@app.route('/FarmingBot', methods=['POST', 'GET'])
+def send_event():
     data = request.get_json()
     if not data:
         return jsonify({"error": "Aucune donnée JSON reçue"}), 400
