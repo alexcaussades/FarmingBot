@@ -37,17 +37,6 @@ PORT = 8080
 
 app = Flask(__name__)
 
-from flask import Flask, request, jsonify
-import requests
-import os
-from datetime import datetime
-
-app = Flask(__name__)
-
-# ==========================================================
-# CONFIGURATION
-# ==========================================================
-
 def send_discord(message):
 
     if not DISCORD_WEBHOOK:
