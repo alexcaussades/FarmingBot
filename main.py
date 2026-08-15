@@ -7,6 +7,7 @@ import requests
 import json
 from module.recolte.recolte import get_recolte_info, list_crops, add_crop
 from module.mounth.up_mouth import connect_db, close_connection, update_mouth_task, get_mouth_tasks
+from module.ed.ed import send_discord
 import sqlite3
 import logging
 from datetime import datetime
@@ -19,6 +20,18 @@ client = discord.Client(intents=intents)
 intents.message_content = True
 webhook_url = "https://discord.com/api/webhooks/1458894502105317520/jI95H8T60BaliVqLpxUDEZ4OImBXtDCrsaaGeoM4QecpV8vFm-TM6Dgp5ik9i1H6RZKP"
 
+
+@client.event
+async def send_discord(message):
+    data = {
+        "content": message
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    response = requests.post(webhook_url, json=data, headers=headers)
+    if response.status_code != 204:
+        print(f"Failed to send message to Discord: {response.status_code} - {response.text}")
 
 @client.event
 async def on_ready():
