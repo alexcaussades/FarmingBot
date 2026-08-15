@@ -25,12 +25,12 @@ Serveur_carriere_live = os.getenv('Serveur_Career')
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 intents.message_content = True
-webhook_url = "https://discord.com/api/webhooks/1458894502105317520/jI95H8T60BaliVqLpxUDEZ4OImBXtDCrsaaGeoM4QecpV8vFm-TM6Dgp5ik9i1H6RZKP"
+webhook_url = os.environ.get("DISCORD_WEBHOOK")
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_TEST")
 API_KEY = os.environ.get("Pc_windows")
 app = Flask(__name__)
 
-HOST = "0.0.0.0"
+HOST = "192.168.1.114"
 PORT = 8080
 
 # ==========================================================
