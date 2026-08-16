@@ -1,6 +1,6 @@
 from ast import Not
 import discord
-from flask import Flask, request, jsonify
+#from flask import Flask, request, jsonify
 import os
 from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
