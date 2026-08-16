@@ -638,5 +638,3 @@ def new_func(message, role_name):
 
         
 client.run(os.getenv('Token'))
-
-app.run(host=HOST, port=PORT)
