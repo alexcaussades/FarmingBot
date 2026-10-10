@@ -1,11 +1,11 @@
-from ast import Not
 import discord
-#from flask import Flask, request, jsonify
+from discord import app_commands
 import os
 from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
 import requests
 import json
+from module.Api.farming import FarmingAPI
 from module.recolte.recolte import get_recolte_info, list_crops, add_crop
 from module.mounth.up_mouth import connect_db, close_connection, update_mouth_task, get_mouth_tasks
 import sqlite3
@@ -18,19 +18,21 @@ from datetime import datetime
 # ============================================================
 
 load_dotenv()
-Serveur_info_live = os.getenv('Serveur_Stats')
-Serveur_carriere_live = os.getenv('Serveur_Career')
-intents = discord.Intents.default()
-client = discord.Client(intents=intents)
-intents.message_content = True
+
 webhook_url = os.environ.get("DISCORD_WEBHOOK")
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_TEST")
-API_KEY = os.environ.get("Pc_windows")
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = discord.Client(intents=intents)
+
+tree = app_commands.CommandTree(client)
 
 
 @client.event
 async def on_ready():
    print(f"Bot connecté en tant que {client.user}")
+   await tree.sync()
    await client.change_presence(activity=discord.Game(name=os.getenv('MessageServeur') + "V" + os.getenv('Version')))
    requests.post(webhook_url, json={"content": f"🤖 Le bot s'est connecté en tant que {client.user}"})
 
@@ -78,6 +80,11 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    if message.content.startswith('!api'):
+        url = "http://127.0.0.1:8000/api"
+        response = requests.get(url)
+        await message.channel.send(f"Réponse de l'API: {response.json()['message']}")
+    
     if message.content.startswith('!bonjour'):
         staff_role = discord.utils.get(message.guild.roles, name="STAFF")
         if staff_role in message.author.roles:
@@ -273,5 +280,101 @@ async def on_message(message):
         await message.channel.send("✅ Les informations de récolte vous ont été envoyées en message privé.", delete_after=10)
         # delete the command message to keep the channel clean
         await message.delete()
-       
+        
+@tree.command(
+    name="api",
+    description="Savoir la réponse de l'API"
+)
+async def api(interaction: discord.Interaction):
+    url = "http://127.0.0.1:8000/api"
+
+    response = requests.get(url)
+
+    await interaction.response.send_message(
+        f"Réponse de l'API: {response.json()['message']}"
+    )
+    
+    
+@tree.command(
+    name="search",
+    description="Obtenir les informations du parcelle de farming <Parcelle ID>"
+)
+    
+async def search(
+    interaction: discord.Interaction,
+    id: str
+):
+    farming_api = FarmingAPI()
+    data = farming_api.get_serveur_farming_parcels(id)
+    if data:
+        await interaction.response.send_message(
+            f"✅ Informations du parcelle de farming pour l'ID '{id}': {data}"
+        )
+    else:
+        await interaction.response.send_message(
+            f"❌ Impossible de récupérer les informations du parcelle de farming pour l'ID '{id}'."
+        )
+
+@tree.command(
+    name="reserve",
+    description="Réserver un parcelle de farming <Parcelle ID>"
+)
+async def reserve(
+    interaction: discord.Interaction,
+    id: str,
+   
+):
+    farming_api = FarmingAPI()
+    reservation_data = interaction.user.id
+    data = farming_api.push_reservation(id, {"user_id": reservation_data})
+    print(f"Push reservation response: {data}")
+    if data:
+        await interaction.response.send_message(
+            f"✅ Bravo {interaction.user.mention} ! tu as bien réservé la parcelle du serveur: {id}"
+        )
+    else:
+        await interaction.response.send_message(
+            f"❌ Impossible de réserver la parcelle: {id} ."
+        )
+
+@tree.command(
+    name="cancel",
+    description="Annuler une réservation d'un parcelle de farming <Parcelle ID>"
+)
+async def cancel(
+    interaction: discord.Interaction,
+    id: str,
+):
+    farming_api = FarmingAPI()
+    reservation_data = interaction.user.id
+    data = farming_api.cancel_reservation(id, {"user_id": reservation_data})
+    print(f"Cancel reservation response: {data}")
+    if data:
+        await interaction.response.send_message(
+            f"✅ Bravo {interaction.user.mention} ! tu as bien annulé la réservation de la parcelle {id} du serveur "
+        )
+    else:
+        await interaction.response.send_message(
+            f"❌ Impossible d'annuler la réservation de la parcelle: {id} ."
+        )
+
+@tree.command(
+    name="check",
+    description="Vérifier la réservation d'un parcelle de farming <Parcelle ID>"
+)
+async def check(
+    interaction: discord.Interaction,
+    id: str,
+):
+    farming_api = FarmingAPI()
+    data = farming_api.get_serveur_farming_parcels(id)
+    if data:
+        await interaction.response.send_message(
+            f"ℹ️ Informations de la parcelle: {id} : {data}"
+        )
+    else:
+        await interaction.response.send_message(
+            f"❌ Impossible de récupérer les informations du parcelle de farming pour l'ID '{id}'."
+        )
+
 client.run(os.getenv('Token'))
