@@ -58,7 +58,7 @@ class FarmingAPI:
                 else:
                     information = f"\n Hectares: {payload.get('data', {}).get('area', 'N/A')}\n Prix: {Price} €\n status : {status}\n ⚠️ Cette parcelle est actuellement réservée."
             else:
-                information = f"\n Hectares: {payload.get('data', {}).get('area', 'N/A')}\n Prix: {Price} €\n status : {status}\n tu peux réserver cette parcelle. alors dépêche-toi !"
+                information = f"\n Hectares: {payload.get('data', {}).get('area', 'N/A')}\n Prix: {Price} €\n status : {status}\n Tu peux réserver cette parcelle. alors dépêche-toi ! \n Pour réserver, utilise la commande /reserve {id}"
             return information
         except requests.RequestException as e:
             print(f"Error fetching serveur farming parcels: {e}")
