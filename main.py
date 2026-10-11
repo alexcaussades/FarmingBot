@@ -79,11 +79,6 @@ async def on_message(message):
     
     if message.author == client.user:
         return
-
-    if message.content.startswith('!api'):
-        url = "http://127.0.0.1:8000/api"
-        response = requests.get(url)
-        await message.channel.send(f"Réponse de l'API: {response.json()['message']}")
     
     if message.content.startswith('!bonjour'):
         staff_role = discord.utils.get(message.guild.roles, name="STAFF")
@@ -280,20 +275,7 @@ async def on_message(message):
         await message.channel.send("✅ Les informations de récolte vous ont été envoyées en message privé.", delete_after=10)
         # delete the command message to keep the channel clean
         await message.delete()
-        
-@tree.command(
-    name="api",
-    description="Savoir la réponse de l'API"
-)
-async def api(interaction: discord.Interaction):
-    url = "http://127.0.0.1:8000/api"
-
-    response = requests.get(url)
-
-    await interaction.response.send_message(
-        f"Réponse de l'API: {response.json()['message']}"
-    )
-    
+           
     
 @tree.command(
     name="search",
@@ -307,11 +289,11 @@ async def search(
     farming_api = FarmingAPI()
     data = farming_api.get_serveur_farming_parcels(id)
     if data:
-        await interaction.response.send_message(
+        await interaction.user.send(
             f"✅ Informations du parcelle de farming pour l'ID '{id}': {data}"
         )
     else:
-        await interaction.response.send_message(
+        await interaction.user.send(
             f"❌ Impossible de récupérer les informations du parcelle de farming pour l'ID '{id}'."
         )
 
@@ -329,11 +311,11 @@ async def reserve(
     data = farming_api.push_reservation(id, {"user_id": reservation_data})
     print(f"Push reservation response: {data}")
     if data:
-        await interaction.response.send_message(
-            f"✅ Bravo {interaction.user.mention} ! tu as bien réservé la parcelle du serveur: {id}"
+        await interaction.user.send(
+            f"✅ Bravo {interaction.user.mention} ! Tu as bien réservé la parcelle du serveur: {id} \n Pour annuler, utilise la commande /cancel {id}"
         )
     else:
-        await interaction.response.send_message(
+        await interaction.user.send(
             f"❌ Impossible de réserver la parcelle: {id} ."
         )
 
@@ -350,11 +332,11 @@ async def cancel(
     data = farming_api.cancel_reservation(id, {"user_id": reservation_data})
     print(f"Cancel reservation response: {data}")
     if data:
-        await interaction.response.send_message(
-            f"✅ Bravo {interaction.user.mention} ! tu as bien annulé la réservation de la parcelle {id} du serveur "
+        await interaction.user.send(
+            f"✅ Bravo {interaction.user.mention} ! Tu as bien annulé la réservation de la parcelle {id} du serveur "
         )
     else:
-        await interaction.response.send_message(
+        await interaction.user.send(
             f"❌ Impossible d'annuler la réservation de la parcelle: {id} ."
         )
 
@@ -369,11 +351,11 @@ async def check(
     farming_api = FarmingAPI()
     data = farming_api.get_serveur_farming_parcels(id)
     if data:
-        await interaction.response.send_message(
+        await interaction.user.send(
             f"ℹ️ Informations de la parcelle: {id} : {data}"
         )
     else:
-        await interaction.response.send_message(
+        await interaction.user.send(
             f"❌ Impossible de récupérer les informations du parcelle de farming pour l'ID '{id}'."
         )
 
