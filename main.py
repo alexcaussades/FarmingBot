@@ -19,6 +19,11 @@ from datetime import datetime
 
 load_dotenv()
 
+def recharger_env():
+    load_dotenv(override=True)
+
+recharger_env()
+
 webhook_url = os.environ.get("DISCORD_WEBHOOK")
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_TEST")
 intents = discord.Intents.default()
