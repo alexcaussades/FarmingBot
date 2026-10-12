@@ -359,4 +359,23 @@ async def check(
             f"❌ Impossible de récupérer les informations du parcelle de farming pour l'ID '{id}'."
         )
 
+@tree.command(
+    name='uptime',
+    description="Vérifier le temps de fonctionnement du serveur de farming et l'état de l'API"
+)
+async def uptime(
+    interaction: discord.Interaction,
+):
+    farming_api = FarmingAPI()
+    data = farming_api.uptime()
+    if data:
+        await interaction.user.send(
+            f"{data}"
+        )
+    else:
+        await interaction.user.send(
+            f"❌ Impossible de récupérer le temps de fonctionnement du serveur de farming."
+        )
+
+
 client.run(os.getenv('Token'))
