@@ -112,3 +112,14 @@ class FarmingAPI:
         except requests.RequestException as e:
             print(f"Error checking reservation for ID '{id}': {e}")
             return None
+        
+    def uptime(self):
+        try:
+            response = requests.get(f"{self.serveur_farming_api_url}/uptime", headers=self.headers)
+            response.raise_for_status()
+            payload = response.json()
+            text = f"⏱️ Le serveur de farming {payload.get('Data', {}).get('Server', {}).get('name_serveur', 'N/A')} fonctionne depuis: {payload.get('Data', {}).get('Server', {}).get('uptime', 'N/A')} Actuellement il y a : {payload.get('Data', {}).get('Server', {}).get('players', 'N/A')} joueurs, Mods : {payload.get('Data', {}).get('Server', {}).get('Mods', 'N/A')}\n Statut du service Api: {payload.get('Data', {}).get('Api', {}).get('status', 'N/A')} en version {payload.get('Data', {}).get('Api', {}).get('version', 'N/A')}"
+            return text
+        except requests.RequestException as e:
+            print(f"Error fetching uptime: {e}")
+            return None
