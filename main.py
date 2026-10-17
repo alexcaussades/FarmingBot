@@ -5,24 +5,28 @@ from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
 import requests
 import json
+import asyncio
+from pathlib import Path
 from module.Api.farming import FarmingAPI
 from module.recolte.recolte import get_recolte_info, list_crops, add_crop
 from module.mounth.up_mouth import connect_db, close_connection, update_mouth_task, get_mouth_tasks
-import sqlite3
-import logging
+from module.Api.Github.api import get_latest_release
 from datetime import datetime
 
 
 # ============================================================
 # CONFIGURATION
 # ============================================================
-
-load_dotenv()
+app_env = os.environ.get("APP_ENV","web").lower()
+env_file = Path(__file__).resolve().parent / f".env.{app_env}"
+load_dotenv(env_file)
 
 def recharger_env():
     load_dotenv(override=True)
 
 recharger_env()
+
+print(f"Chargement de l'environnement depuis le fichier : {env_file}")
 
 webhook_url = os.environ.get("DISCORD_WEBHOOK")
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_TEST")
@@ -38,7 +42,7 @@ tree = app_commands.CommandTree(client)
 async def on_ready():
    print(f"Bot connecté en tant que {client.user}")
    await tree.sync()
-   await client.change_presence(activity=discord.Game(name=os.getenv('MessageServeur') + "V" + os.getenv('Version')))
+   await client.change_presence(activity=discord.Game(name=os.getenv('MessageServeur') + "V" + get_latest_release()))
    requests.post(webhook_url, json={"content": f"🤖 Le bot s'est connecté en tant que {client.user}"})
 
 
@@ -291,15 +295,21 @@ async def search(
     interaction: discord.Interaction,
     id: str
 ):
-    farming_api = FarmingAPI()
-    data = farming_api.get_serveur_farming_parcels(id)
-    if data:
+    await interaction.response.defer(ephemeral=True)
+    try:
+        farming_api = FarmingAPI()
+        data = await asyncio.to_thread(farming_api.get_serveur_farming_parcels, id)
+        if data:
+            await interaction.user.send(
+                f"✅ Informations du parcelle de farming pour l'ID '{id}': {data}"
+            )
+        else:
+            await interaction.user.send(
+                f"❌ Impossible de récupérer les informations du parcelle de farming pour l'ID '{id}'."
+            )
+    except Exception as e:
         await interaction.user.send(
-            f"✅ Informations du parcelle de farming pour l'ID '{id}': {data}"
-        )
-    else:
-        await interaction.user.send(
-            f"❌ Impossible de récupérer les informations du parcelle de farming pour l'ID '{id}'."
+            f"❌ Une erreur s'est produite: {str(e)}"
         )
 
 @tree.command(
@@ -311,17 +321,23 @@ async def reserve(
     id: str,
    
 ):
-    farming_api = FarmingAPI()
-    reservation_data = interaction.user.id
-    data = farming_api.push_reservation(id, {"user_id": reservation_data})
-    print(f"Push reservation response: {data}")
-    if data:
+    await interaction.response.defer(ephemeral=True)
+    try:
+        farming_api = FarmingAPI()
+        reservation_data = interaction.user.id
+        data = await asyncio.to_thread(farming_api.push_reservation, id, {"user_id": reservation_data})
+        print(f"Push reservation response: {data}")
+        if data:
+            await interaction.user.send(
+                f"✅ Bravo {interaction.user.mention} ! Tu as bien réservé la parcelle du serveur: {id} \n Pour annuler, utilise la commande /cancel {id}"
+            )
+        else:
+            await interaction.user.send(
+                f"❌ Impossible de réserver la parcelle: {id} ."
+            )
+    except Exception as e:
         await interaction.user.send(
-            f"✅ Bravo {interaction.user.mention} ! Tu as bien réservé la parcelle du serveur: {id} \n Pour annuler, utilise la commande /cancel {id}"
-        )
-    else:
-        await interaction.user.send(
-            f"❌ Impossible de réserver la parcelle: {id} ."
+            f"❌ Une erreur s'est produite: {str(e)}"
         )
 
 @tree.command(
@@ -332,17 +348,23 @@ async def cancel(
     interaction: discord.Interaction,
     id: str,
 ):
-    farming_api = FarmingAPI()
-    reservation_data = interaction.user.id
-    data = farming_api.cancel_reservation(id, {"user_id": reservation_data})
-    print(f"Cancel reservation response: {data}")
-    if data:
+    await interaction.response.defer(ephemeral=True)
+    try:
+        farming_api = FarmingAPI()
+        reservation_data = interaction.user.id
+        data = await asyncio.to_thread(farming_api.cancel_reservation, id, {"user_id": reservation_data})
+        print(f"Cancel reservation response: {data}")
+        if data:
+            await interaction.user.send(
+                f"✅ Bravo {interaction.user.mention} ! Tu as bien annulé la réservation de la parcelle {id} du serveur "
+            )
+        else:
+            await interaction.user.send(
+                f"❌ Impossible d'annuler la réservation de la parcelle: {id} ."
+            )
+    except Exception as e:
         await interaction.user.send(
-            f"✅ Bravo {interaction.user.mention} ! Tu as bien annulé la réservation de la parcelle {id} du serveur "
-        )
-    else:
-        await interaction.user.send(
-            f"❌ Impossible d'annuler la réservation de la parcelle: {id} ."
+            f"❌ Une erreur s'est produite: {str(e)}"
         )
 
 @tree.command(
@@ -353,15 +375,21 @@ async def check(
     interaction: discord.Interaction,
     id: str,
 ):
-    farming_api = FarmingAPI()
-    data = farming_api.get_serveur_farming_parcels(id)
-    if data:
+    await interaction.response.defer(ephemeral=True)
+    try:
+        farming_api = FarmingAPI()
+        data = await asyncio.to_thread(farming_api.get_serveur_farming_parcels, id)
+        if data:
+            await interaction.user.send(
+                f"ℹ️ Informations de la parcelle: {id} : {data}"
+            )
+        else:
+            await interaction.user.send(
+                f"❌ Impossible de récupérer les informations du parcelle de farming pour l'ID '{id}'."
+            )
+    except Exception as e:
         await interaction.user.send(
-            f"ℹ️ Informations de la parcelle: {id} : {data}"
-        )
-    else:
-        await interaction.user.send(
-            f"❌ Impossible de récupérer les informations du parcelle de farming pour l'ID '{id}'."
+            f"❌ Une erreur s'est produite: {str(e)}"
         )
 
 @tree.command(
@@ -371,15 +399,21 @@ async def check(
 async def uptime(
     interaction: discord.Interaction,
 ):
-    farming_api = FarmingAPI()
-    data = farming_api.uptime()
-    if data:
+    await interaction.response.defer(ephemeral=True)
+    try:
+        farming_api = FarmingAPI()
+        data = await asyncio.to_thread(farming_api.uptime)
+        if data:
+            await interaction.user.send(
+                f"{data}"
+            )
+        else:
+            await interaction.user.send(
+                f"❌ Impossible de récupérer le temps de fonctionnement du serveur de farming."
+            )
+    except Exception as e:
         await interaction.user.send(
-            f"{data}"
-        )
-    else:
-        await interaction.user.send(
-            f"❌ Impossible de récupérer le temps de fonctionnement du serveur de farming."
+            f"❌ Une erreur s'est produite: {str(e)}"
         )
 
 
