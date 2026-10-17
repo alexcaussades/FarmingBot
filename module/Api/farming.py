@@ -24,7 +24,7 @@ class FarmingAPI:
 
     def get_farming_data(self):
         try:
-            response = requests.get(self.farming_api_url, headers=self.headers)
+            response = requests.get(self.farming_api_url, headers=self.headers, timeout=10)
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
@@ -33,7 +33,7 @@ class FarmingAPI:
         
     def get_serveur_farming_parcels(self, id):
         try:
-            response = requests.get(f"{self.farming_api_url}/{id}", headers=self.headers)
+            response = requests.get(f"{self.farming_api_url}/{id}", headers=self.headers, timeout=10)
             response.raise_for_status()
             payload = response.json()
             # Retourner les informations du parcelle de farming pour l'ID '{id}'
@@ -78,7 +78,7 @@ class FarmingAPI:
             f"{self.farming_api_url}/{id}/reserve",
             json=payload,
             headers=self.headers,
-            timeout=15
+            timeout=10
         )
         return response.json() if response.status_code == 201 else None
 
@@ -87,20 +87,21 @@ class FarmingAPI:
         discord_id = str(reservation_data.get('user_id'))
         print(f"Discord ID : {discord_id}")
         print(f"Farmland ID : {id}")
-
+        
         payload = {"discord_id": discord_id}
 
-        response = requests.delete(
-            f"{self.farming_api_url}/{id}/reserve",
+        response = requests.post(
+            f"{self.farming_api_url}/{id}/cancel",
             json=payload,
             headers=self.headers,
-            timeout=15
+            timeout=10
         )
         return response.json() if response.status_code == 200 else None
+
     
     def check_reservation(self, id):
         try:
-            response = requests.get(f"{self.farming_api_url}/{id}/check", headers=self.headers)
+            response = requests.get(f"{self.farming_api_url}/{id}/check", headers=self.headers, timeout=10)
             response.raise_for_status()
             payload = response.json()
             data = payload.get('data', {})
@@ -115,7 +116,7 @@ class FarmingAPI:
         
     def uptime(self):
         try:
-            response = requests.get(f"{self.serveur_farming_api_url}/uptime", headers=self.headers)
+            response = requests.get(f"{self.serveur_farming_api_url}/uptime", headers=self.headers, timeout=10)
             response.raise_for_status()
             payload = response.json()
             text = f"⏱️ Le serveur de farming {payload.get('Data', {}).get('Server', {}).get('name_serveur', 'N/A')} \n Fonctionne depuis: {payload.get('Data', {}).get('Server', {}).get('uptime', 'N/A')} \n Actuellement il y a : {payload.get('Data', {}).get('Server', {}).get('players', 'N/A')} joueurs \n Mods : {payload.get('Data', {}).get('Server', {}).get('Mods', 'N/A')} actifs sur le serveur \n Statut du service Api: {payload.get('Data', {}).get('Api', {}).get('status', 'N/A')} en version {payload.get('Data', {}).get('Api', {}).get('version', 'N/A')}"
