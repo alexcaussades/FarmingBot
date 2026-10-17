@@ -1,6 +1,6 @@
 Code.txt
 database.sqlite
-.env
+.env.*
 *__pycache__
 *.pyc
 *.pyo
