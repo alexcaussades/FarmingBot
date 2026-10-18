@@ -8,6 +8,7 @@ import json
 import asyncio
 from pathlib import Path
 from module.Api.farming import FarmingAPI
+from module.Api.tasks import TasksAPI
 from module.recolte.recolte import get_recolte_info, list_crops, add_crop
 from module.mounth.up_mouth import connect_db, close_connection, update_mouth_task, get_mouth_tasks
 from module.Api.Github.api import get_latest_release
@@ -17,7 +18,7 @@ from datetime import datetime
 # ============================================================
 # CONFIGURATION
 # ============================================================
-app_env = os.environ.get("APP_ENV","web").lower()
+app_env = os.environ.get("APP_ENV","local").lower()
 env_file = Path(__file__).resolve().parent / f".env.{app_env}"
 load_dotenv(env_file)
 
@@ -26,10 +27,10 @@ def recharger_env():
 
 recharger_env()
 
-print(f"Chargement de l'environnement depuis le fichier : {env_file}")
 
 webhook_url = os.environ.get("DISCORD_WEBHOOK")
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_TEST")
+URL_TASKS = os.environ.get("URL_TASKS")
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -416,5 +417,43 @@ async def uptime(
             f"❌ Une erreur s'est produite: {str(e)}"
         )
 
+@tree.command(
+    name="task_for_month",
+    description="Récupérer les tâches pour le mois <Mois> | Exemple: 1:12 || janvier, février, etc.",
+)
+async def tasks_by_month(
+    interaction: discord.Interaction,
+    month: str,
+):
+    await interaction.response.defer(ephemeral=True)
+    try:
+        tasks_api = TasksAPI()
+        data = await asyncio.to_thread(tasks_api.get_tasks_by_month, month, )
+        month_mapping = {
+            "1": "janvier",
+            "2": "février",
+            "3": "mars",
+            "4": "avril",
+            "5": "mai",
+            "6": "juin",
+            "7": "juillet",
+            "8": "août",
+            "9": "septembre",
+            "10": "octobre",
+            "11": "novembre",
+            "12": "décembre"
+        }
+        if data:
+            await interaction.user.send(
+                f"ℹ️ Tâches pour le mois {month_mapping.get(month, month)} : {data}"
+            )
+        else:
+            await interaction.user.send(
+                f"❌ aucun résultat pour le mois : '{month_mapping.get(month, month)}'."
+            )
+    except Exception as e:
+        await interaction.user.send(
+            f"❌ Une erreur s'est produite: {str(e)}"
+        )
 
 client.run(os.getenv('Token'))
