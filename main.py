@@ -456,4 +456,38 @@ async def tasks_by_month(
             f"❌ Une erreur s'est produite: {str(e)}"
         )
 
+@tree.command(
+    name="create_task",
+    description="Créer une nouvelle tâche pour le mois spécifié"
+)
+async def create_task(
+    interaction: discord.Interaction,
+    parcelle: int,
+    task: str,
+    month: str,
+):
+    await interaction.response.defer(ephemeral=True)
+    # task_data = {"player_id": str(player_id.get('user_id')),"farmland_id": task_data.get("farmland_id"),"task_name": task_data.get("task_name"),"month": task_data.get("month")}
+    try:
+        tasks_api = TasksAPI()
+        task = {
+            "player_id": str(interaction.user.id),
+            "farmland_id": parcelle, 
+            "task_name": task, 
+            "month": month
+        }
+        data = await asyncio.to_thread(tasks_api.create_task, month, task)
+        if data:
+            await interaction.user.send(
+                f"✅ Tâche créée pour la parcelle : {data['farmland_id']}"
+            )
+        else:
+            await interaction.user.send(
+                f"❌ Impossible de créer la tâche pour le mois '{month}'."
+            )
+    except Exception as e:
+        await interaction.user.send(
+            f"❌ Une erreur s'est produite: {str(e)}"
+        )
+
 client.run(os.getenv('Token'))

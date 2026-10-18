@@ -48,16 +48,15 @@ class TasksAPI:
         else:
             return None
 
-    def create_task(self, task_data, player_id):
+    def create_task(self, month, task_data):
         
         task_data = {
-            "player_id": str(player_id.get('user_id')),
+            "player_id": str(task_data.get('player_id')),
             "farmland_id": task_data.get("farmland_id"),
             "task_name": task_data.get("task_name"),
             "month": task_data.get("month")
         }
-                
-        response = requests.post(self.url, json=task_data)
+        response = requests.post(f"{self.url}/create", json=task_data)
         if response.status_code == 201:
             return response.json()
         else:
