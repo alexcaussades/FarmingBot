@@ -104,7 +104,7 @@ async def metar(interaction: discord.Interaction, icao: str):
         response = requests.get(f"{API_URL}/ivao/metar/{icao}")
         if response.status_code == 200:
             data = response.json()
-            await interaction.followup.send(f" **{icao}** :\n{data['metar']} \n la dernière mise à jour : {data['update']}", ephemeral=True)
+            await interaction.followup.send(f" METAR : {data['data']['metar']} \nLa dernière mise à jour date de {data['data']['update']} l'observation", ephemeral=True)
         else:
             await interaction.followup.send(f"❌ Aucune information METAR trouvée pour **{icao}**.", ephemeral=True)
     except Exception as exc:
@@ -118,7 +118,7 @@ async def taf(interaction: discord.Interaction, icao: str):
         response = requests.get(f"{API_URL}/ivao/taf/{icao}")
         if response.status_code == 200:
             data = response.json()
-            await interaction.followup.send(f" **{icao}** :\n{data['taf']} \n la dernière mise à jour : {data['update']}", ephemeral=True)
+            await interaction.followup.send(f" TAF : {data['data']['taf']} \nLa dernière mise à jour date de {data['data']['update']} l'observation", ephemeral=True)
         else:
             await interaction.followup.send(f"❌ Aucune information TAF trouvée pour **{icao}**.", ephemeral=True)
     except Exception as exc:
@@ -127,12 +127,40 @@ async def taf(interaction: discord.Interaction, icao: str):
 @infoivao.command(name="atc", description="Obtenir les informations ATC d'un aéroport")
 @app_commands.describe(icao="Code ICAO de l'aéroport")
 async def atc(interaction: discord.Interaction, icao: str):
+    dict_atc = {
+        "A" : "ALPHA",
+        "B" : "BRAVO",
+        "C" : "CHARLIE",
+        "D" : "DELTA",
+        "E" : "ECHO",
+        "F" : "FOXTROT",
+        "G" : "GOLF",
+        "H" : "HOTEL",
+        "I" : "INDIA",
+        "J" : "JULIET",
+        "K" : "KILO",
+        "L" : "LIMA",
+        "M" : "MIKE",
+        "N" : "NOVEMBER",
+        "O" : "OSCAR",
+        "P" : "PAPA",
+        "Q" : "QUEBEC",
+        "R" : "ROMEO",
+        "S" : "SIERRA",
+        "T" : "TANGO",
+        "U" : "UNIFORM",
+        "V" : "VICTOR",
+        "W" : "WHISKEY",
+        "X" : "X-RAY",
+        "Y" : "YANKEE",
+        "Z" : "ZULU"
+    }
     await interaction.response.defer(ephemeral=True)
     try:
         response = requests.get(f"{API_URL}/ivao/atis/{icao}")
         if response.status_code == 200:
             data = response.json()
-            await interaction.followup.send(f" Informations **{data['revision']}** :\n {data['information']} \n la dernière mise à jour : {data['update']}", ephemeral=True)
+            await interaction.followup.send(f" Informations **{dict_atc[data['data']['revision']]}**\n{data['data']['information']} \nLa dernière mise à jour date de {data['data']['update']} la publication", ephemeral=True)
         else:
             await interaction.followup.send(f"❌ Aucune information ATC trouvée pour **{icao}**.", ephemeral=True)
     except Exception as exc:
