@@ -161,10 +161,11 @@ async def atc(interaction: discord.Interaction, icao: str):
         if response.status_code == 200:
             data = response.json()
             await interaction.followup.send(f" Informations **{dict_atc[data['data']['revision']]}**\n{data['data']['information']} \nLa dernière mise à jour date de {data['data']['update']} la publication", ephemeral=True)
-        else:
+        if not data['data']['information']:
             await interaction.followup.send(f"❌ Aucune information ATC trouvée pour **{icao}**.", ephemeral=True)
+            return
     except Exception as exc:
-        await interaction.followup.send(f"❌ Erreur API : `{exc}`", ephemeral=True)
+        await interaction.followup.send(f"❌ Aucune information ATC trouvée pour **{icao}**.", ephemeral=True)
 
 
 # ------------------------------------------------------------
