@@ -104,7 +104,7 @@ async def metar(interaction: discord.Interaction, icao: str):
         response = requests.get(f"{API_URL}/ivao/metar/{icao}")
         if response.status_code == 200:
             data = response.json()
-            await interaction.followup.send(f" **{icao}** :\n{data.metar} \n la dernière mise à jour : {data.update}", ephemeral=True)
+            await interaction.followup.send(f" **{icao}** :\n{data['metar']} \n la dernière mise à jour : {data['update']}", ephemeral=True)
         else:
             await interaction.followup.send(f"❌ Aucune information METAR trouvée pour **{icao}**.", ephemeral=True)
     except Exception as exc:
@@ -118,7 +118,7 @@ async def taf(interaction: discord.Interaction, icao: str):
         response = requests.get(f"{API_URL}/ivao/taf/{icao}")
         if response.status_code == 200:
             data = response.json()
-            await interaction.followup.send(f" **{icao}** :\n{data.taf} \n la dernière mise à jour : {data.update}", ephemeral=True)
+            await interaction.followup.send(f" **{icao}** :\n{data['taf']} \n la dernière mise à jour : {data['update']}", ephemeral=True)
         else:
             await interaction.followup.send(f"❌ Aucune information TAF trouvée pour **{icao}**.", ephemeral=True)
     except Exception as exc:
@@ -132,7 +132,7 @@ async def atc(interaction: discord.Interaction, icao: str):
         response = requests.get(f"{API_URL}/ivao/atis/{icao}")
         if response.status_code == 200:
             data = response.json()
-            await interaction.followup.send(f" Informations **{data.revision}** :\n {data.information} \n la dernière mise à jour : {data.update}", ephemeral=True)
+            await interaction.followup.send(f" Informations **{data['revision']}** :\n {data['information']} \n la dernière mise à jour : {data['update']}", ephemeral=True)
         else:
             await interaction.followup.send(f"❌ Aucune information ATC trouvée pour **{icao}**.", ephemeral=True)
     except Exception as exc:
