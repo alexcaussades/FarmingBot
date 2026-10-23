@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import requests
 
 load_dotenv()
-URL_TASKS = "http://127.0.0.1:8000/api/farmlands/tasks"
+URL_TASKS = os.getenv("URL_TASKS")
 
 class TasksAPI:
     def __init__(self, url=URL_TASKS):
