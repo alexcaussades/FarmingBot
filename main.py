@@ -16,18 +16,26 @@ from module.Api.Github.api import get_latest_release
 # ------------------------------------------------------------
 app_env = os.environ.get("APP_ENV", "web").lower()
 env_file = Path(__file__).resolve().parent / f".env.{app_env}"
-load_dotenv(env_file, override=False)
+# Recharge les variables d'environnement depuis le fichier .env correspondant à l'environnement actuel
+if env_file.exists():
+    load_dotenv(env_file, override=True)
+else:
+    load_dotenv(override=False)
+
+
 
 TOKEN = os.getenv("Token")
 WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK")
+URL_TASKS = os.getenv("URL_TASKS")
+API_URL = os.getenv("API_URL")
+
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
-
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
-API_URL = os.getenv("API_URL")
+
 # ------------------------------------------------------------
 # Arborescence slash : /fs25 ...
 # ------------------------------------------------------------
@@ -280,7 +288,7 @@ async def tache_mois(interaction: discord.Interaction, mois: str):
         "9": "septembre", "10": "octobre", "11": "novembre", "12": "décembre"
     }
     try:
-        api = TasksAPI()
+        api = TasksAPI(url=URL_TASKS)
         data = await asyncio.to_thread(api.get_tasks_by_month, mois)
         mois_affiche = mapping.get(mois, mois)
         if data:
@@ -314,7 +322,7 @@ async def tache_creer(
 ):
     await interaction.response.defer(ephemeral=True)
     try:
-        api = TasksAPI()
+        api = TasksAPI(url=URL_TASKS)
         task_data = {
             "player_id": str(interaction.user.id),
             "farmland_id": parcelle_id,

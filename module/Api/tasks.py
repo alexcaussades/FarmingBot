@@ -3,17 +3,22 @@ import os
 from time import sleep
 import discord
 from discord import app_commands
-import os
-from pathlib import Path
 from dotenv import load_dotenv
 import requests
 
+
 load_dotenv()
+
+
 URL_TASKS = os.getenv("URL_TASKS")
 
+
 class TasksAPI:
-    def __init__(self, url=URL_TASKS):
+    
+    def __init__(self, url):
         self.url = url
+        
+    
     def get_tasks(self):
         response = requests.get(self.url)
         if response.status_code == 200:
