@@ -180,13 +180,13 @@ async def atc(interaction: discord.Interaction, icao: str, position: app_command
         if response.status_code == 200:
             data = response.json()
             await interaction.followup.send(
-                f"Position {[data['data']['ATC_position']]} - {[data['data']['frequency']]} Mhz - Online: ({[data['data']['ATC_session_time']]})\n"
+                f"Position {data['data']['ATC_position']} - {data['data']['frequency']} Mhz - Online: ({data['data']['ATC_session_time']})\n"
                 f"Informations {dict_atc[data['data']['revision']]}\n"
                 f"{data['data']['information']} \nLa dernière mise à jour date de {data['data']['update']} la publication\n"
-                f"[Profile](https://ivao.aero/Member.aspx?Id={data['data']['user_id']}) | Creator: {data['data']['creator']}.", ephemeral=True)
-        if not data['data']['information']:
-            await interaction.followup.send(f"❌ Aucune information ATC trouvée pour **{icao}**.", ephemeral=True)
-            return
+                f"[Profile](https://ivao.aero/Member.aspx?Id={data['data']['user_id']})", ephemeral=True)
+            if not data['data']['ATC_position']:
+                await interaction.followup.send(f"❌ Aucune information ATC trouvée pour **{icao}**.", ephemeral=True)
+                return
     except Exception as exc:
         await interaction.followup.send(f"❌ Aucune information ATC trouvée pour **{icao}**.", ephemeral=True)
 
