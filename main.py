@@ -133,8 +133,19 @@ async def taf(interaction: discord.Interaction, icao: str):
         await interaction.followup.send(f"❌ Erreur API : `{exc}`", ephemeral=True)
 
 @infoivao.command(name="atc", description="Obtenir les informations ATC d'un aéroport")
-@app_commands.describe(icao="Code ICAO de l'aéroport")
-async def atc(interaction: discord.Interaction, icao: str):
+@app_commands.describe(icao="Code ICAO de l'aéroport", position="Position ATC dont tu souhaites consulter l'ATIS")
+@app_commands.choices(
+    position=[
+        app_commands.Choice(name="ATIS Standard", value=0),
+        app_commands.Choice(name="Approche (APP)", value=1),
+        app_commands.Choice(name="Tour (TWR)", value=2),
+        app_commands.Choice(name="Sol (GND)", value=3),
+        app_commands.Choice(name="Délivrance (DEL)", value=4),
+        app_commands.Choice(name="ATIS dédié", value=5),
+        app_commands.Choice(name="Service d'information de vol (FSS)", value=6),
+    ]
+)
+async def atc(interaction: discord.Interaction, icao: str, position: app_commands.Choice[int]):
     dict_atc = {
         "A" : "ALPHA",
         "B" : "BRAVO",
@@ -165,10 +176,14 @@ async def atc(interaction: discord.Interaction, icao: str):
     }
     await interaction.response.defer(ephemeral=True)
     try:
-        response = requests.get(f"{API_URL}/ivao/atis/{icao}")
+        response = requests.get(f"{API_URL}/ivao/atis/{icao}/{position.value}")
         if response.status_code == 200:
             data = response.json()
-            await interaction.followup.send(f" Informations **{dict_atc[data['data']['revision']]}**\n{data['data']['information']} \nLa dernière mise à jour date de {data['data']['update']} la publication", ephemeral=True)
+            await interaction.followup.send(
+                f"Position {[data['data']['ATC_position']]} - {[data['data']['frequency']]} Mhz - Online: ({[data['data']['ATC_session_time']]})\n"
+                f"Informations {dict_atc[data['data']['revision']]}\n"
+                f"{data['data']['information']} \nLa dernière mise à jour date de {data['data']['update']} la publication\n"
+                f"[Profile](https://ivao.aero/Member.aspx?Id={data['data']['user_id']}) | Creator: {data['data']['creator']}.", ephemeral=True)
         if not data['data']['information']:
             await interaction.followup.send(f"❌ Aucune information ATC trouvée pour **{icao}**.", ephemeral=True)
             return
