@@ -132,64 +132,195 @@ async def taf(interaction: discord.Interaction, icao: str):
     except Exception as exc:
         await interaction.followup.send(f"❌ Erreur API : `{exc}`", ephemeral=True)
 
-@infoivao.command(name="atc", description="Obtenir les informations ATC d'un aéroport")
-@app_commands.describe(icao="Code ICAO de l'aéroport", position="Position ATC dont tu souhaites consulter l'ATIS")
+@infoivao.command(
+    name="atc",
+    description="Obtenir les informations ATC d'un aéroport"
+)
+@app_commands.describe(
+    icao="Code ICAO de l'aéroport",
+    position="Position ATC dont tu souhaites consulter l'ATIS"
+)
 @app_commands.choices(
     position=[
-        app_commands.Choice(name="ATIS Standard", value=0),
+        app_commands.Choice(name="ATIS standard", value=0),
         app_commands.Choice(name="Approche (APP)", value=1),
         app_commands.Choice(name="Tour (TWR)", value=2),
         app_commands.Choice(name="Sol (GND)", value=3),
         app_commands.Choice(name="Délivrance (DEL)", value=4),
         app_commands.Choice(name="ATIS dédié", value=5),
-        app_commands.Choice(name="Service d'information de vol (FSS)", value=6),
+        app_commands.Choice(
+            name="Service d'information de vol (FSS)",
+            value=6
+        ),
     ]
 )
-async def atc(interaction: discord.Interaction, icao: str, position: app_commands.Choice[int]):
+async def atc(
+    interaction: discord.Interaction,
+    icao: str,
+    position: app_commands.Choice[int]
+):
     dict_atc = {
-        "A" : "ALPHA",
-        "B" : "BRAVO",
-        "C" : "CHARLIE",
-        "D" : "DELTA",
-        "E" : "ECHO",
-        "F" : "FOXTROT",
-        "G" : "GOLF",
-        "H" : "HOTEL",
-        "I" : "INDIA",
-        "J" : "JULIET",
-        "K" : "KILO",
-        "L" : "LIMA",
-        "M" : "MIKE",
-        "N" : "NOVEMBER",
-        "O" : "OSCAR",
-        "P" : "PAPA",
-        "Q" : "QUEBEC",
-        "R" : "ROMEO",
-        "S" : "SIERRA",
-        "T" : "TANGO",
-        "U" : "UNIFORM",
-        "V" : "VICTOR",
-        "W" : "WHISKEY",
-        "X" : "X-RAY",
-        "Y" : "YANKEE",
-        "Z" : "ZULU"
+        "A": "ALPHA",
+        "B": "BRAVO",
+        "C": "CHARLIE",
+        "D": "DELTA",
+        "E": "ECHO",
+        "F": "FOXTROT",
+        "G": "GOLF",
+        "H": "HOTEL",
+        "I": "INDIA",
+        "J": "JULIET",
+        "K": "KILO",
+        "L": "LIMA",
+        "M": "MIKE",
+        "N": "NOVEMBER",
+        "O": "OSCAR",
+        "P": "PAPA",
+        "Q": "QUEBEC",
+        "R": "ROMEO",
+        "S": "SIERRA",
+        "T": "TANGO",
+        "U": "UNIFORM",
+        "V": "VICTOR",
+        "W": "WHISKEY",
+        "X": "X-RAY",
+        "Y": "YANKEE",
+        "Z": "ZULU"
     }
-    await interaction.response.defer(ephemeral=True)
-    try:
-        response = requests.get(f"{API_URL}/ivao/atis/{icao}/{position.value}")
-        if response.status_code == 200:
-            data = response.json()
-            await interaction.followup.send(
-                f"Position {data['data']['ATC_position']} - {data['data']['frequency']} Mhz - Online: ({data['data']['ATC_session_time']})\n"
-                f"Informations {dict_atc[data['data']['revision']]}\n"
-                f"{data['data']['information']} \nLa dernière mise à jour date de {data['data']['update']} la publication\n"
-                f"[Profile](https://ivao.aero/Member.aspx?Id={data['data']['user_id']})", ephemeral=True)
-            if not data['data']['ATC_position']:
-                await interaction.followup.send(f"❌ Aucune information ATC trouvée pour **{icao}**.", ephemeral=True)
-                return
-    except Exception as exc:
-        await interaction.followup.send(f"❌ Aucune information ATC trouvée pour **{icao}**.", ephemeral=True)
 
+    await interaction.response.defer(ephemeral=True)
+
+    icao = icao.strip().upper()
+
+    try:
+        # Appel de ton API Laravel sans bloquer Discord
+        url = (
+            f"{API_URL.rstrip('/')}/ivao/atis/"
+            f"{icao}/{position.value}"
+        )
+
+        response = await asyncio.to_thread(
+            requests.get,
+            url,
+            timeout=15
+        )
+
+        if response.status_code != 200:
+            await interaction.followup.send(
+                f"❌ L'API a retourné le code HTTP "
+                f"{response.status_code} pour **{icao}**.",
+                ephemeral=True
+            )
+            return
+
+        result = response.json()
+        data = result.get("data", {})
+
+        if not isinstance(data, dict) or not data:
+            await interaction.followup.send(
+                f"❌ Aucune information ATC trouvée pour **{icao}**.",
+                ephemeral=True
+            )
+            return
+
+        # Vérifier la position ATC
+        atc_position = data.get("ATC_position")
+
+        if not atc_position:
+            await interaction.followup.send(
+                f"❌ Aucune position ATC active trouvée pour "
+                f"**{icao}** — {position.name}.",
+                ephemeral=True
+            )
+            return
+
+        # Vérifier la présence des informations ATIS
+        information = data.get("information")
+
+        if not isinstance(information, str) or not information.strip():
+            await interaction.followup.send(
+                f"❌ Aucune information ATIS disponible pour **{icao}**.",
+                ephemeral=True
+            )
+            return
+
+        # Récupérer la session sans provoquer de KeyError
+        session = data.get("ATC_session")
+        if not isinstance(session, dict):
+            session = {}
+
+        # Fréquence : champ principal, puis session ATC
+        frequency = data.get("frequency") or session.get("frequency")
+        frequency_text = (
+            f"{frequency} MHz"
+            if frequency is not None
+            else "Non renseignée"
+        )
+
+        # Traduire la révision : C -> CHARLIE
+        revision = data.get("revision")
+        if revision is not None:
+            revision_text = dict_atc.get(
+                str(revision).strip().upper(),
+                str(revision)
+            )
+        else:
+            revision_text = "Non renseignée"
+
+        # Autres informations
+        session_time = data.get("ATC_session_time") or "Inconnue"
+        updated = data.get("update") or "Inconnue"
+        user_id = data.get("user_id")
+
+        # Construire le message Discord
+        message = (
+            f"📡 **ATC — {icao}**\n"
+            f"**Position :** {atc_position}\n"
+            f"**Fréquence :** {frequency_text}\n"
+            f"**Online :** {session_time}\n\n"
+            f"**Informations {revision_text} :**\n"
+            f"{information}\n\n"
+            f"**Dernière mise à jour :** {updated}"
+        )
+
+        # Lien du profil IVAO si l'identifiant est disponible
+        if user_id is not None and not isinstance(user_id, dict):
+            message += (
+                f"\n[Profil IVAO]"
+                f"(https://ivao.aero/Member.aspx?Id={user_id})"
+            )
+
+        await interaction.followup.send(
+            message[:2000],
+            ephemeral=True
+        )
+
+    except requests.exceptions.Timeout:
+        await interaction.followup.send(
+            "❌ Le délai d'attente de l'API est dépassé.",
+            ephemeral=True
+        )
+
+    except requests.exceptions.RequestException as exc:
+        print(f"Erreur réseau ATC : {exc}")
+        await interaction.followup.send(
+            "❌ Impossible de contacter l'API ATC.",
+            ephemeral=True
+        )
+
+    except (ValueError, TypeError, AttributeError) as exc:
+        print(f"Erreur de traitement ATC : {exc}")
+        await interaction.followup.send(
+            "❌ La réponse de l'API est invalide.",
+            ephemeral=True
+        )
+
+    except Exception as exc:
+        print(f"Erreur inattendue ATC : {exc}")
+        await interaction.followup.send(
+            "❌ Une erreur inattendue est survenue.",
+            ephemeral=True
+        )
 
 # ------------------------------------------------------------
 # /fs25 parcelle rechercher
