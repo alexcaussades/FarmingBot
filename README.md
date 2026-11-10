@@ -11,6 +11,7 @@ Bot Discord pour gérer les parcelles d’un serveur de farming, consulter les t
 - `/FS25 reserve <id>` : réserve une parcelle au nom de votre compte Discord.
 - `/FS25 cancel <id>` : annule votre réservation.
 - `/FS25 uptime` : affiche l’état du serveur, sa durée de fonctionnement, le nombre de joueurs et l’état de l’API.
+- `/FS25 mpd serveur` : réservé aux aministrateur de discord et serveur
 
 ### Tâches
 

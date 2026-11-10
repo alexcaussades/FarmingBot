@@ -124,3 +124,14 @@ class FarmingAPI:
         except requests.RequestException as e:
             print(f"Error fetching uptime: {e}")
             return None
+        
+    def get_admin_password(self, reservation_data):
+        discord_id = str(reservation_data.get('user_id'))
+        try:
+            response = requests.post(f"{self.serveur_farming_api_url}/admin-serv-password", json={"discord_id": discord_id}, headers=self.headers, timeout=10)
+            response.raise_for_status()
+            payload = response.json()
+            return payload.get('password')
+        except requests.RequestException as e:
+            print(f"Error fetching admin password: {e}")
+            return None
