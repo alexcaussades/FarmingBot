@@ -23,7 +23,6 @@ else:
     load_dotenv(override=False)
 
 
-
 TOKEN = os.getenv("Token")
 WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK")
 URL_TASKS = os.getenv("URL_TASKS")
@@ -90,8 +89,6 @@ fs25.add_command(culture)
 fs25.add_command(serveur)
 tree.add_command(fs25)
 tree.add_command(infoivao)
-
-
 
 
 async def send_private_result(interaction: discord.Interaction, content: str):
@@ -519,14 +516,15 @@ async def serveur_uptime(interaction: discord.Interaction):
             )
     except Exception as exc:
         await interaction.followup.send(f"❌ Erreur API : `{exc}`", ephemeral=True)
-        
+
 
 @serveur.command(name="mdp-admin", description="Obtenir le mot de passe administrateur du serveur réservé aux administrateurs")
 async def serveur_mdp_admin(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
     try:
         api = FarmingAPI()
-        mdp = await asyncio.to_thread(api.get_admin_password, {"user_id": interaction.user.id})
+        data = {"discord_id": interaction.user.id}
+        mdp = await asyncio.to_thread(api.get_admin_password, data)
         if mdp:
             await interaction.followup.send(f"🔑 Mot de passe administrateur : `{mdp}`", ephemeral=True)
         else:

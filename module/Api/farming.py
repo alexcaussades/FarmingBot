@@ -123,8 +123,8 @@ class FarmingAPI:
             print(f"Error fetching uptime: {e}")
             return None
 
-    def get_admin_password(self, reservation_data):
-        discord_id = str(reservation_data.get('user_id'))
+    def get_admin_password(self, data):
+        discord_id = str(data.get('discord_id'))
         print(self.serveur_farming_api_url)
         try:
             response = requests.post(
