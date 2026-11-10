@@ -194,17 +194,14 @@ async def atc(
 
     try:
         # Appel de ton API Laravel sans bloquer Discord
-        url = (
-            f"{API_URL.rstrip('/')}/ivao/atis/"
-            f"{icao}/{position.value}"
-        )
+        url = f"{API_URL}/ivao/atis/{icao}/{position.value}"
 
         response = await asyncio.to_thread(
             requests.get,
             url,
             timeout=15
         )
-
+        print(f"Request URL: {url} : , Status Code: {response.status_code}, Response: {response.text}")
         if response.status_code != 200:
             await interaction.followup.send(
                 f"❌ L'API a retourné le code HTTP "
@@ -518,6 +515,23 @@ async def serveur_uptime(interaction: discord.Interaction):
         else:
             await interaction.followup.send(
                 "❌ Impossible de récupérer l'état du serveur.",
+                ephemeral=True
+            )
+    except Exception as exc:
+        await interaction.followup.send(f"❌ Erreur API : `{exc}`", ephemeral=True)
+        
+
+@serveur.command(name="mdp-admin", description="Obtenir le mot de passe administrateur du serveur réservé aux administrateurs")
+async def serveur_mdp_admin(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    try:
+        api = FarmingAPI()
+        mdp = await asyncio.to_thread(api.get_admin_password, {"user_id": interaction.user.id})
+        if mdp:
+            await interaction.followup.send(f"🔑 Mot de passe administrateur : `{mdp}`", ephemeral=True)
+        else:
+            await interaction.followup.send(
+                "❌ Impossible de récupérer le mot de passe administrateur.",
                 ephemeral=True
             )
     except Exception as exc:
