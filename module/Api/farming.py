@@ -21,7 +21,6 @@ class FarmingAPI:
             "Content-Type": "application/json"
         }
 
-
     def get_farming_data(self):
         try:
             response = requests.get(self.farming_api_url, headers=self.headers, timeout=10)
@@ -30,7 +29,7 @@ class FarmingAPI:
         except requests.RequestException as e:
             print(f"Error fetching farming data: {e}")
             return None
-        
+
     def get_serveur_farming_parcels(self, id):
         try:
             response = requests.get(f"{self.farming_api_url}/{id}", headers=self.headers, timeout=10)
@@ -47,7 +46,7 @@ class FarmingAPI:
             Price0 = str(Price)[:3]
             Price1 = str(Price)[3:] if Price else "N/A"
             Price = f"{Price0}.{Price1}" if Price0 and Price1 else "N/A"
-            
+
             if status == 'reserved':
                 player = active_reservation.get('player', {}) if isinstance(active_reservation, dict) else {}
                 discord_id = player.get('discord_id') if isinstance(player, dict) else None
@@ -63,15 +62,15 @@ class FarmingAPI:
         except requests.RequestException as e:
             print(f"Error fetching serveur farming parcels: {e}")
             return None
-        
+
     def push_reservation(self, id, reservation_data):
         print(f"Pushing reservation data for ID '{id}': {reservation_data}")
         discord_id = str(reservation_data.get('user_id'))
         print(f"Discord ID : {discord_id}")
         print(f"Farmland ID : {id}")
-        
+
         discord_id = str(reservation_data.get('user_id'))
-        
+
         payload = {"discord_id": discord_id}
 
         response = requests.post(
@@ -87,7 +86,7 @@ class FarmingAPI:
         discord_id = str(reservation_data.get('user_id'))
         print(f"Discord ID : {discord_id}")
         print(f"Farmland ID : {id}")
-        
+
         payload = {"discord_id": discord_id}
 
         response = requests.post(
@@ -98,7 +97,6 @@ class FarmingAPI:
         )
         return response.json() if response.status_code == 200 else None
 
-    
     def check_reservation(self, id):
         try:
             response = requests.get(f"{self.farming_api_url}/{id}/check", headers=self.headers, timeout=10)
@@ -113,7 +111,7 @@ class FarmingAPI:
         except requests.RequestException as e:
             print(f"Error checking reservation for ID '{id}': {e}")
             return None
-        
+
     def uptime(self):
         try:
             response = requests.get(f"{self.serveur_farming_api_url}/uptime", headers=self.headers, timeout=10)
@@ -124,14 +122,14 @@ class FarmingAPI:
         except requests.RequestException as e:
             print(f"Error fetching uptime: {e}")
             return None
-        
+
     def get_admin_password(self, reservation_data):
         discord_id = str(reservation_data.get('user_id'))
         try:
             response = requests.post(f"{self.serveur_farming_api_url}/admin-serv-password", json={"discord_id": discord_id}, headers=self.headers, timeout=10)
             response.raise_for_status()
             payload = response.json()
-            return payload.get('password')
+            return payload.get("admin_password")
         except requests.RequestException as e:
             print(f"Error fetching admin password: {e}")
             return None
